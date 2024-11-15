@@ -1,6 +1,8 @@
-﻿using Cinemachine;
+﻿using System;
+using Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
+using Random = UnityEngine.Random;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -14,10 +16,14 @@ namespace Triwoinmag
 #if ENABLE_INPUT_SYSTEM
     [RequireComponent(typeof(PlayerInput))]
 #endif
-    public class ThirdPersonController : NetworkBehaviour
+    public class CharacterMovement : NetworkBehaviour
     {
         [Header("Player")] [Tooltip("Move speed of the character in m/s")]
         public float MoveSpeed = 2.0f;
+
+        [SerializeField] private PlayerMoveState _moveState;
+
+        public PlayerMoveState MoveState => _moveState;
 
         [Tooltip("Sprint speed of the character in m/s")]
         public float SprintSpeed = 5.335f;
@@ -96,11 +102,23 @@ namespace Triwoinmag
         private int _animIDFreeFall;
         private int _animIDMotionSpeed;
 
+        //Abilities
+        [SerializeField] private AbilityMoveHookshot hookshotAbility;
+
+        [SerializeField] private Vector3 _hookTargetPosition;
+
+        [SerializeField] private Vector3 _momentumAfterSpecMovement;
+
+        //Delegates
+        public Action<Vector3> StartPerformingHookshot;
+        public Action StopPerformingHookshot;
+
+
 #if ENABLE_INPUT_SYSTEM
         private PlayerInput _playerInput;
 #endif
         private Animator _animator;
-        private CharacterController _controller;
+        public CharacterController _controller;
         private ClientPlayerInput _input;
         private GameObject _mainCamera;
         private CinemachineVirtualCamera _cinemCamera;
@@ -172,15 +190,79 @@ namespace Triwoinmag
         private void Update()
         {
             _hasAnimator = TryGetComponent(out _animator);
-
-            JumpAndGravity();
-            GroundedCheck();
-            Move();
+            if (_moveState == PlayerMoveState.Normal)
+            {
+                JumpAndGravity();
+                GroundedCheck();
+                Move();
+            }
+            else if (_moveState == PlayerMoveState.Hookshot)
+            {
+                Hookshot(_hookTargetPosition);
+            }
         }
 
         private void LateUpdate()
         {
             CameraRotation();
+        }
+
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+        }
+
+        //Abbilities
+        public void SwitchHookshot()
+        {
+            if (_moveState != PlayerMoveState.Hookshot)
+            {
+
+                _hookTargetPosition = hookshotAbility.FireHookshot();
+                if (_hookTargetPosition != Vector3.zero)
+                {
+                    StartHookshot(_hookTargetPosition);
+                }
+            }
+            else if (_moveState == PlayerMoveState.Hookshot)
+            {
+                StopHookshot(true);
+            }
+        }
+
+        private void Hookshot(Vector3 hookTargetPosition)
+        {
+            var hookshotMoveVector = hookshotAbility.Hookshot(hookTargetPosition);
+            Debug.Log(hookshotMoveVector);
+            if (hookshotMoveVector != Vector3.zero)
+            {
+                _controller.Move(hookshotMoveVector);
+            }
+            else
+            {
+                StopHookshot(false);
+            }
+        }
+
+        private void StartHookshot(Vector3 hookTargetPosition)
+        {
+            _moveState = PlayerMoveState.Hookshot;
+
+            _animator.SetBool(_animIDFreeFall, true);
+            _animator.SetBool(_animIDGrounded, false);
+
+            _verticalVelocity = 0f;
+
+            StartPerformingHookshot?.Invoke(hookTargetPosition);
+        }
+
+        private void StopHookshot(bool canceled)
+        {
+            _moveState = PlayerMoveState.Normal;
+
+            _momentumAfterSpecMovement = hookshotAbility.CalculateMomentum(canceled);
+
+            StopPerformingHookshot?.Invoke();
         }
 
         private void AssignAnimationIDs()
@@ -297,7 +379,14 @@ namespace Triwoinmag
 
             // move the player
             _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
-                             new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+                             new Vector3(_momentumAfterSpecMovement.x, _momentumAfterSpecMovement.y + _verticalVelocity,
+                                 _momentumAfterSpecMovement.z) * Time.deltaTime);
+            if (_momentumAfterSpecMovement.magnitude > 0f)
+            {
+                _momentumAfterSpecMovement -= _momentumAfterSpecMovement * (3 * Time.deltaTime);
+                if (_momentumAfterSpecMovement.magnitude < 0.05f)
+                    _momentumAfterSpecMovement = Vector3.zero;
+            }
 
             // update animator if using character
             if (_hasAnimator)
@@ -440,5 +529,11 @@ namespace Triwoinmag
                     FootstepAudioVolume);
             }
         }
+    }
+
+    public enum PlayerMoveState
+    {
+        Normal,
+        Hookshot
     }
 }
