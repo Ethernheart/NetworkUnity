@@ -29,12 +29,21 @@ namespace Triwoinmag
                     $"CharacterHealth.ReceiveDamage. New Health: {_health}. Attacker: {sender.gameObject.name}. Attacker faction: {sender.ShipFaction}");
             }
 
+            if (IsServer)
+            {
+                ManagerScore.I.AddScore(sender.OwnerClientId, 5);
+            }
+
             if (_health <= 0)
             {
                 Instantiate(ExplosionPrefab, transform.position, Quaternion.identity);
                 DeathEffectClientRpc();
                 if (IsServer)
+                {
                     Destroy(gameObject);
+                    ManagerScore.I.AddScore(sender.OwnerClientId, 100);
+
+                }
             }
         }
 

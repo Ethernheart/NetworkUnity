@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using TMPro;
 using Triwoinmag.ConnectionManagement;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Triwoinmag {
-    public class UIInMatch : MonoBehaviour {
+    public class UIInMatchEsc : MonoBehaviour {
 
-	    [SerializeField] private GameObject _inMatchPanel;
+	    [FormerlySerializedAs("_inMatchPanel")] [SerializeField] private GameObject _inMatchEscPanel;
 		[SerializeField] private Button _exitButton;
 
 
@@ -24,7 +25,7 @@ namespace Triwoinmag {
 		}
 
 	    private void Start() {
-		    _connectionManager.MatchStarted += TurnOnPanel;
+		    //_connectionManager.MatchStarted += TurnOnPanel;
 	    }
 	    private void Update() {
 			if (Input.GetKeyDown(KeyCode.Escape)) {
@@ -33,7 +34,7 @@ namespace Triwoinmag {
 		}
 
 		private void OnDestroy() {
-		    _connectionManager.MatchStarted -= TurnOnPanel;
+		    //_connectionManager.MatchStarted -= TurnOnPanel;
 	    }
 
 
@@ -45,7 +46,7 @@ namespace Triwoinmag {
 
 		private void SwitchPanel() {
 			//_inMatchPanel.SetActive(!_inMatchPanel.activeSelf);
-			if (_inMatchPanel.activeSelf) {
+			if (_inMatchEscPanel.activeSelf) {
 				TurnOffPanel();
 			}
 			else {
@@ -53,12 +54,12 @@ namespace Triwoinmag {
 			}
 		}
 		private void TurnOnPanel() {
-			_inMatchPanel.SetActive(true);
+			_inMatchEscPanel.SetActive(true);
 			Cursor.lockState = CursorLockMode.None;
 			Cursor.visible = true;
 		}
 		private void TurnOffPanel() {
-			_inMatchPanel.SetActive(false);
+			_inMatchEscPanel.SetActive(false);
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
 		}

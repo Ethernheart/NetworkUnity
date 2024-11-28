@@ -1346,6 +1346,7 @@ GameObject:
   - component: {fileID: 5905933612056670932}
   - component: {fileID: 8895102677512774759}
   - component: {fileID: 4712053262868070294}
+  - component: {fileID: -4364849606856728485}
   m_Layer: 20
   m_Name: PlayerRed
   m_TagString: Player
@@ -1432,7 +1433,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 206257953
+  GlobalObjectIdHash: 1963955992
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -1488,6 +1489,7 @@ MonoBehaviour:
   LockCameraPosition: 0
   hookshotAbility: {fileID: 6215432101397434725}
   _hookTargetPosition: {x: 0, y: 0, z: 0}
+  _momentumAfterSpecMovement: {x: 0, y: 0, z: 0}
   _controller: {fileID: 0}
 --- !u!114 &6352047573357147934
 MonoBehaviour:
@@ -1702,6 +1704,21 @@ MonoBehaviour:
   <MaxHealth>k__BackingField: 100
   ExplosionPrefab: {fileID: 1370254330202522708, guid: 5f3bf930d814fd543bcd42e4849fa7ff,
     type: 3}
+--- !u!114 &-4364849606856728485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4424067427735745388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e5cfa835339497089e15018411564c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiPlayerCharScore: {fileID: 0}
+  charScore:
+    m_InternalValue: 0
 --- !u!1 &4488150719454511553
 GameObject:
   m_ObjectHideFlags: 0
@@ -3094,6 +3111,8 @@ MonoBehaviour:
   _hookTargetPosition: {x: 0, y: 0, z: 0}
   _lineRendCircle: {fileID: 6520013523823969894}
   _lineRendShot: {fileID: 6977128595708479474}
+  _momentumAfterCancelHookshot: {x: 0, y: 0, z: 0}
+  _momentumAfterPerformedHookshot: {x: 0, y: 0, z: 0}
 --- !u!1001 &5321030403308476645
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -40,7 +40,7 @@ namespace Triwoinmag.ConnectionManagement
     //     public FixedPlayerName PlayerName;
     // }
     //
-    // [Serializable]
+    [Serializable]
     public class ConnectionPayload
     {
         // public string playerId;
@@ -65,7 +65,8 @@ namespace Triwoinmag.ConnectionManagement
 
         private Dictionary<ulong, ConnectionPayload> _playersClientsIdToConnectionPayload =
             new Dictionary<ulong, ConnectionPayload>();
-        // private List<ConnectionPayload> listPlayersConnectionPayload = new List<ConnectionPayload>();
+
+        [SerializeField] private List<ConnectionPayload> listPlayersConnectionPayload = new List<ConnectionPayload>();
 
         public Action MatchStarted;
 
@@ -85,9 +86,10 @@ namespace Triwoinmag.ConnectionManagement
             var payloadBytes = System.Text.Encoding.UTF8.GetBytes(payload);
 
             NetworkManager.NetworkConfig.ConnectionData = payloadBytes;
-            
+
             NetworkManager.ConnectionApprovalCallback += ApprovalCheck;
             NetworkManager.StartHost();
+            MatchStarted?.Invoke();
         }
 
         public void ConnectAsClient(string playerName)
@@ -107,6 +109,7 @@ namespace Triwoinmag.ConnectionManagement
             NetworkManager.NetworkConfig.ConnectionData = payloadBytes;
 
             NetworkManager.StartClient();
+            MatchStarted?.Invoke();
         }
 
         public void Shutdown()
@@ -154,7 +157,7 @@ namespace Triwoinmag.ConnectionManagement
             _ = CreateCustomPlayerObjectAsync(clientId, playerPrefab);
 
             response.Approved = true;
-            response.CreatePlayerObject = true;
+            response.CreatePlayerObject = false;
 
             // The Prefab hash value of the NetworkPrefab, if null the default NetworkManager player Prefab is used
             // response.PlayerPrefabHash = null;
@@ -175,7 +178,6 @@ namespace Triwoinmag.ConnectionManagement
 
             _playersClientsIdToConnectionPayload[clientId] = connectionPayload;
             // listPlayersConnectionPayload.Add(connectionPayload);
-            MatchStarted?.Invoke();
         }
 
         private async Task CreateCustomPlayerObjectAsync(ulong clientId, GameObject playerPrefab)
